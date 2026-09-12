@@ -82,7 +82,6 @@ export default function PixelCanvas() {
     const idx = indexFor(x, y);
     if (tool === "pencil" || tool === "eraser") {
       setIsDrawing(true);
-      paintPixel(idx);
       if (tool === "eraser") erasePixel(idx);
       else paintPixel(idx);
     } else if (tool === "fill") {

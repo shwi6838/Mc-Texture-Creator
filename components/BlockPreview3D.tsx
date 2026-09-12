@@ -3,9 +3,12 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
+import { RotateCcw } from "lucide-react";
 import * as THREE from "three";
 import { useEditorStore } from "@/lib/store";
 import { FaceName, TEXTURE_SIZE, TextureGrid } from "@/lib/types";
+
 
 function gridToCanvas(grid: TextureGrid): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
@@ -67,14 +70,25 @@ function Cube() {
 }
 
 export default function BlockPreview3D() {
+  const controlsRef = useRef<OrbitControlsImpl>(null);
   return (
-    <div className="h-full w-full pixel-border checker-bg">
+    <div className="relative h-full w-full pixel-border checker-bg">
+      <button
+        type="button"
+        onClick={() => controlsRef.current?.reset()}
+        title="Reset view"
+        aria-label="Reset view"
+        className="absolute right-2 top-2 z-10 flex items-center gap-1 bg-stone-950/80 px-2 py-1 pixel-border text-[10px] text-stone-300 hover:text-stone-100 hover:bg-stone-800"
+      >
+        <RotateCcw className="h-3 w-3" />
+        Reset
+      </button>
       <Canvas camera={{ position: [2.4, 2, 2.6], fov: 35 }}>
         <ambientLight intensity={0.7} />
         <directionalLight position={[3, 5, 2]} intensity={1.1} />
         <directionalLight position={[-3, -2, -2]} intensity={0.3} />
         <Cube />
-        <OrbitControls enablePan={false} minDistance={2} maxDistance={6} />
+        <OrbitControls ref={controlsRef} enablePan={false} minDistance={2} maxDistance={6} />
       </Canvas>
     </div>
   );

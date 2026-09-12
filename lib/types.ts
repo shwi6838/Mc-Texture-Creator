@@ -37,7 +37,6 @@ export interface SelectionRect {
 }
 
 export const BLOCK_FAMILIES = [
-  "none",
   "stairs",
   "slab",
   "wall",
@@ -51,7 +50,6 @@ export const BLOCK_FAMILIES = [
 export type BlockFamily = (typeof BLOCK_FAMILIES)[number];
 
 export const BLOCK_FAMILY_LABELS: Record<BlockFamily, string> = {
-  none: "Single block",
   stairs: "Stairs",
   slab: "Slab",
   wall: "Wall",
@@ -65,7 +63,6 @@ export const BLOCK_FAMILY_LABELS: Record<BlockFamily, string> = {
 
 // Which variant suffixes a family generates in the add-on export.
 export const BLOCK_FAMILY_VARIANTS: Record<BlockFamily, string[]> = {
-  none: [""],
   stairs: ["_stairs"],
   slab: ["_slab", "_double_slab"],
   wall: ["_wall"],
@@ -75,6 +72,32 @@ export const BLOCK_FAMILY_VARIANTS: Record<BlockFamily, string[]> = {
   pressure_plate: ["_pressure_plate"],
   door: ["_door"],
   trapdoor: ["_trapdoor"],
+};
+
+// One-click presets: which families to toggle on, plus the hardness/blast
+// resistance Minecraft uses for that material category.
+export type FamilyPresetKey = "stone" | "wood";
+
+export interface FamilyPreset {
+  label: string;
+  families: BlockFamily[];
+  hardness: number;
+  blastResistance: number;
+}
+
+export const BLOCK_FAMILY_PRESETS: Record<FamilyPresetKey, FamilyPreset> = {
+  stone: {
+    label: "Stone type",
+    families: ["stairs", "wall", "slab"],
+    hardness: 1.5, // vanilla stone: hardness 1.5
+    blastResistance: 6, // vanilla stone: blast resistance 6
+  },
+  wood: {
+    label: "Wood type",
+    families: ["stairs", "fence", "fence_gate", "slab", "door", "trapdoor"],
+    hardness: 2, // vanilla planks: hardness 2.0
+    blastResistance: 3, // vanilla planks: blast resistance 3
+  },
 };
 
 export const RENDER_METHODS = [
@@ -90,7 +113,7 @@ export interface BlockProject {
   displayName: string; // human name shown in-game and in the UI
   namespace: string; // add-on namespace, e.g. "myaddon"
   linkedFaces: boolean; // when true, editing one face edits all six
-  family: BlockFamily;
+  families: BlockFamily[]; // toggled block-family variants to export alongside the base block
   renderMethod: RenderMethod;
   lightEmission: number; // 0-15
   destroyTime: number; // hardness, in seconds
@@ -116,7 +139,7 @@ export function createDefaultProject(): BlockProject {
     displayName: "Custom Block",
     namespace: "myaddon",
     linkedFaces: true,
-    family: "none",
+    families: [],
     renderMethod: "opaque",
     lightEmission: 0,
     destroyTime: 1.5,

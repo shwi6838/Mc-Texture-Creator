@@ -249,7 +249,10 @@ export async function buildAddonZip(project: BlockProject): Promise<Blob> {
   );
 
   // Family variants: stub block + starter geometry the user refines in Blockbench.
-  const variants = BLOCK_FAMILY_VARIANTS[project.family].filter((v) => v !== "");
+  // A block can belong to several families at once (e.g. a "stone type" block
+  // is stairs + wall + slab all together), so flatten each toggled family's
+  // suffixes into one list.
+  const variants = project.families.flatMap((f) => BLOCK_FAMILY_VARIANTS[f]);
   if (variants.length) {
     const geoFolder = rp.folder("models/blocks")!;
     for (const suffix of variants) {
@@ -275,13 +278,13 @@ export async function buildAddonZip(project: BlockProject): Promise<Blob> {
       "com.mojang/development_behavior_packs and development_resource_packs",
       "folders (or zip each and rename to .mcpack), then enable both packs",
       "on a world.",
-      variants.length
+      project.families.length
         ? [
             "",
-            `This block uses the "${project.family}" family. Shaped variants`,
-            "(stairs/slabs/walls/etc.) were exported with a placeholder full-cube",
-            "geometry so the block loads immediately — open the .geo.json files",
-            "in Blockbench to sculpt the real stair/slab/wall shape.",
+            `This block includes these families: ${project.families.join(", ")}.`,
+            "Shaped variants (stairs/slabs/walls/etc.) were exported with a",
+            "placeholder full-cube geometry so the block loads immediately —",
+            "open the .geo.json files in Blockbench to sculpt the real shape.",
           ].join("\n")
         : "",
     ].join("\n"),

@@ -4,6 +4,8 @@ import { useEditorStore } from "@/lib/store";
 import {
   BLOCK_FAMILIES,
   BLOCK_FAMILY_LABELS,
+  BLOCK_FAMILY_PRESETS,
+  FamilyPresetKey,
   RENDER_METHODS,
 } from "@/lib/types";
 
@@ -24,7 +26,9 @@ export default function BlockMetaForm() {
   const setIdentifier = useEditorStore((s) => s.setIdentifier);
   const setDisplayName = useEditorStore((s) => s.setDisplayName);
   const setNamespace = useEditorStore((s) => s.setNamespace);
-  const setFamily = useEditorStore((s) => s.setFamily);
+  const toggleFamily = useEditorStore((s) => s.toggleFamily);
+  const applyFamilyPreset = useEditorStore((s) => s.applyFamilyPreset);
+  const clearFamilies = useEditorStore((s) => s.clearFamilies);
   const setRenderMethod = useEditorStore((s) => s.setRenderMethod);
   const setLightEmission = useEditorStore((s) => s.setLightEmission);
   const setDestroyTime = useEditorStore((s) => s.setDestroyTime);
@@ -63,19 +67,70 @@ export default function BlockMetaForm() {
         Full ID: {project.namespace}:{project.identifier}
       </p>
 
-      <Field label="Block family">
-        <select
-          className={inputClass}
-          value={project.family}
-          onChange={(e) => setFamily(e.target.value as (typeof BLOCK_FAMILIES)[number])}
-        >
-          {BLOCK_FAMILIES.map((f) => (
-            <option key={f} value={f}>
-              {BLOCK_FAMILY_LABELS[f]}
-            </option>
-          ))}
-        </select>
-      </Field>
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between text-[11px] text-stone-400">
+          <span>Block family</span>
+          {project.families.length > 0 && (
+            <button
+              type="button"
+              onClick={clearFamilies}
+              className="text-stone-500 underline-offset-2 hover:text-stone-300 hover:underline"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          {(Object.keys(BLOCK_FAMILY_PRESETS) as FamilyPresetKey[]).map((key) => {
+            const preset = BLOCK_FAMILY_PRESETS[key];
+            const active =
+              preset.families.length === project.families.length &&
+              preset.families.every((f) => project.families.includes(f));
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => applyFamilyPreset(key)}
+                className={`pixel-border px-2 py-1.5 text-[11px] ${
+                  active
+                    ? "bg-moss-500 text-stone-950"
+                    : "bg-stone-800 text-stone-300 hover:bg-stone-700"
+                }`}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <p className="text-[10px] text-stone-500">
+          A block can belong to several families at once — toggle any of these on. A preset
+          toggles its whole set and matches Minecraft's hardness/blast resistance for that
+          material.
+        </p>
+
+        <div className="flex flex-wrap gap-1.5">
+          {BLOCK_FAMILIES.map((f) => {
+            const active = project.families.includes(f);
+            return (
+              <button
+                key={f}
+                type="button"
+                onClick={() => toggleFamily(f)}
+                aria-pressed={active}
+                className={`pixel-border px-2 py-1 text-[11px] ${
+                  active
+                    ? "bg-moss-500 text-stone-950"
+                    : "bg-stone-800 text-stone-300 hover:bg-stone-700"
+                }`}
+              >
+                {BLOCK_FAMILY_LABELS[f]}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <Field label="Render method">
         <select

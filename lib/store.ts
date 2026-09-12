@@ -1,9 +1,11 @@
 import { create } from "zustand";
 import {
+  BLOCK_FAMILY_PRESETS,
   BlockFamily,
   BlockProject,
   FACE_NAMES,
   FaceName,
+  FamilyPresetKey,
   PixelColor,
   RenderMethod,
   SelectionRect,
@@ -34,7 +36,9 @@ interface EditorState {
   setIdentifier: (v: string) => void;
   setDisplayName: (v: string) => void;
   setNamespace: (v: string) => void;
-  setFamily: (v: BlockFamily) => void;
+  toggleFamily: (v: BlockFamily) => void;
+  applyFamilyPreset: (preset: FamilyPresetKey) => void;
+  clearFamilies: () => void;
   setRenderMethod: (v: RenderMethod) => void;
   setLightEmission: (v: number) => void;
   setDestroyTime: (v: number) => void;
@@ -118,7 +122,27 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setDisplayName: (v) => set((s) => ({ project: { ...s.project, displayName: v } })),
   setNamespace: (v) =>
     set((s) => ({ project: { ...s.project, namespace: slugify(v) } })),
-  setFamily: (v) => set((s) => ({ project: { ...s.project, family: v } })),
+  toggleFamily: (v) =>
+    set((s) => {
+      const has = s.project.families.includes(v);
+      const families = has
+        ? s.project.families.filter((f) => f !== v)
+        : [...s.project.families, v];
+      return { project: { ...s.project, families } };
+    }),
+  applyFamilyPreset: (preset) =>
+    set((s) => {
+      const p = BLOCK_FAMILY_PRESETS[preset];
+      return {
+        project: {
+          ...s.project,
+          families: [...p.families],
+          destroyTime: p.hardness,
+          explosionResistance: p.blastResistance,
+        },
+      };
+    }),
+  clearFamilies: () => set((s) => ({ project: { ...s.project, families: [] } })),
   setRenderMethod: (v) => set((s) => ({ project: { ...s.project, renderMethod: v } })),
   setLightEmission: (v) => set((s) => ({ project: { ...s.project, lightEmission: v } })),
   setDestroyTime: (v) => set((s) => ({ project: { ...s.project, destroyTime: v } })),
